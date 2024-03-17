@@ -26,6 +26,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   // get user detail from frontend
   const { fullName, email, userName, password } = req.body;
+  console.log({ fullName, email, userName, password });
   if (
     [fullName, email, userName, password].some((field) => {
       field?.trim() === "";
@@ -134,8 +135,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refereshToken: undefined,
+      $unset: {
+        refereshToken: 1,
       },
     },
     { new: true }
@@ -240,7 +241,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   );
 });
 
-const getUserChannelProfile = asyncHandler(async () => {
+const getUserChannelProfile = asyncHandler(async (req, res) => {
   try {
     const { userName } = req.params;
     if (!userName?.trim()) {
@@ -304,9 +305,9 @@ const getUserChannelProfile = asyncHandler(async () => {
       throw new ApiError(400, "channel dose not exist");
     }
 
-    console.log("channel ==> ", channel);
-
-    return res.json(200, channel[0], "User channel fetch successfully");
+    return res.json(
+      new ApiResponse(200, channel[0], "User channel fetch successfully")
+    );
   } catch (error) {
     throw new ApiError(500, "Error while getting channel details");
   }
@@ -321,7 +322,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "Video",
+        from: "videos",
         localField: "watchHistory",
         foreignField: "_id",
         as: "watchHistory",
@@ -334,10 +335,16 @@ const getWatchHistory = asyncHandler(async (req, res) => {
               as: "owner",
               pipeline: [
                 {
-                  $project: { fullName: 1, avatar: 1 },
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
                 },
               ],
             },
+          },
+          {
             $addFields: {
               owner: {
                 $first: "$owner",
@@ -349,13 +356,15 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     },
   ]);
 
-  return res.json(
-    new ApiResponse(
-      200,
-      user[0].watchHistoy,
-      "Watchhistory fetch successfulluy"
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user[0].watchHistory,
+        "Watch history fetched successfully"
+      )
+    );
 });
 
 export {
