@@ -73,6 +73,7 @@ userScheema.methods.generateAccessToken = function () {
     }
   );
 };
+
 userScheema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
@@ -84,35 +85,5 @@ userScheema.methods.generateRefreshToken = function () {
     }
   );
 };
-
-// userScheema.methods.generateAccessToken = async function () {
-//   jwt.sign(
-//     {
-//       _id: this._id,
-//       email: this.email,
-//       userName: this.userName,
-//       fullName: this.fullName,
-//     },
-//     process.env.ACCESS_TOKEN_SECRET,
-//     {
-//       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-//     }
-//   );
-// };
-
-// userScheema.methods.generateRefreshToken = async function () {
-//   jwt.sign(
-//     {
-//       _id: this._id,
-//       email: this.email,
-//       userName: this.userName,
-//       fullName: this.fullName,
-//     },
-//     process.env.REFRESH_TOKEN_SECRET,
-//     {
-//       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-//     }
-//   );
-// };
 
 export const User = mongoose.model("User", userScheema);
