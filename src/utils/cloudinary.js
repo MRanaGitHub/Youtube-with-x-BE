@@ -22,4 +22,12 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
+const removeOldImagesOnCloudinary = async (imageKey) => {
+  try {
+    const res = cloudinary.uploader.destroy(imageKey)
+  } catch (error) {
+    return null;
+  }
+};
+
 export { uploadOnCloudinary };

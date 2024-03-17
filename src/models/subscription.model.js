@@ -15,3 +15,5 @@ const subscriptionSceema = new Schema(
 );
 
 export const Subscription = mongoose.model("Subscription", subscriptionSceema);
+
+

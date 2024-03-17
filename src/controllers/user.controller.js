@@ -214,7 +214,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   );
 });
 
-const updateUserCoverImafe = asyncHandler(async (req, res) => {
+const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLoaclPath = req.file?.path;
 
   if (!coverImageLoaclPath) {
@@ -239,6 +239,78 @@ const updateUserCoverImafe = asyncHandler(async (req, res) => {
   );
 });
 
+const getUserChannelProfile = asyncHandler(async () => {
+  try {
+    const { userName } = req.params;
+    if (!userName?.trim()) {
+      throw new ApiError(400, "Username is missing");
+    }
+
+    const channel = await User.aggregate([
+      {
+        $match: {
+          userName: userName.toLowerCase(),
+        },
+      },
+      {
+        $lookup: {
+          from: "subscription",
+          localField: "_id",
+          foreignField: "channel",
+          as: "subscribers",
+        },
+      },
+      {
+        $lookup: {
+          from: "subscription",
+          localField: "_id",
+          foreignField: "subscriber",
+          as: "subscribedTo",
+        },
+      },
+      {
+        $addFields: {
+          subscribersCount: {
+            $size: "$subscribers",
+          },
+          channelSubscribedToCount: {
+            $size: "$subscribedTo",
+          },
+          isSubscribed: {
+            $cond: {
+              if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+              then: true,
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          fullName: 1,
+          userName: 1,
+          subscribersCount: 1,
+          channelSubscribedToCount: 1,
+          isSubscribed: 1,
+          avatar: 1,
+          coverImage: 1,
+          email: 1,
+        },
+      },
+    ]);
+
+    if (!channel?.length) {
+      throw new ApiError(400, "channel dose not exist");
+    }
+
+    console.log("channel ==> ", channel);
+
+    return res.json(200, channel[0], "User channel fetch successfully");
+  } catch (error) {
+    throw new ApiError(500, "Error while getting channel details");
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -246,4 +318,7 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
+  updateUserAvatar,
+  updateUserCoverImage,
+  getUserChannelProfile,
 };
