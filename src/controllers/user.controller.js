@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "next/dist/server/api-utils/index.js";
+import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -26,7 +26,6 @@ const generateAccessAndRefereshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   // get user detail from frontend
   const { fullName, email, userName, password } = req.body;
-  console.log({ fullName, email, userName, password });
   if (
     [fullName, email, userName, password].some((field) => {
       field?.trim() === "";
